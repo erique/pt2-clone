@@ -2417,6 +2417,9 @@ bool setupVideo(void)
 
 	// Workaround: SDL_GetGlobalMouseState() doesn't work with KMSDRM/Wayland
 	video.useDesktopMouseCoords = true;
+#ifdef __EMSCRIPTEN__
+	video.useDesktopMouseCoords = false;
+#endif
 	const char *videoDriver = SDL_GetCurrentVideoDriver();
 	if (videoDriver != NULL && (strcmp("KMSDRM", videoDriver) == 0 || strcmp("wayland", videoDriver) == 0))
 		video.useDesktopMouseCoords = false;

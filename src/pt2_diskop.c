@@ -420,6 +420,8 @@ bool changePathToHome(void)
 	}
 
 	return false;
+#elif defined(__EMSCRIPTEN__)
+	return chdir("/mods") == 0;
 #else
 	char *homePath;
 

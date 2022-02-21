@@ -38,6 +38,11 @@
 #include "pt2_sampling.h"
 #include "pt2_hpc.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
+
 #define CRASH_TEXT "Oh no!\nThe ProTracker 2 clone has crashed...\n\nA backup .mod was hopefully " \
                    "saved to the current module directory.\n\nPlease report this bug if you can.\n" \
                    "Try to mention what you did before the crash happened."
@@ -86,6 +91,7 @@ static void handleInput(void);
 static bool initializeVars(void);
 static void handleSigTerm(void);
 static void cleanUp(void);
+static void mainUpdate(void *);
 
 static void clearStructs(void)
 {
@@ -331,30 +337,47 @@ int main(int argc, char *argv[])
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
 	hpc_ResetEndTime(&video.vblankHpc);
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop_arg(mainUpdate, NULL, -1, 1);
+#else
 	while (editor.programRunning)
 	{
-		sinkVisualizerBars();
-		updateChannelSyncBuffer();
-		readMouseXY();
-		readKeyModifiers(); // set/clear CTRL/ALT/SHIFT/AMIGA key states
-		handleInput();
-		updateMouseCounters();
-		handleKeyRepeat(keyb.lastRepKey);
-
-		if (!mouse.buttonWaiting && ui.sampleMarkingPos == -1 &&
-			!ui.forceSampleDrag && !ui.forceVolDrag && !ui.forceSampleEdit)
-		{
-			handleGUIButtonRepeat();
-		}
-
-		renderFrame();
-		flipFrame();
+		mainUpdate(NULL);
 	}
+#endif
 
 	cleanUp();
 	SDL_Quit();
 
 	return 0;
+}
+
+static void mainUpdate(void *arg)
+{
+	(void)arg;
+#ifdef __EMSCRIPTEN__
+	if (!editor.programRunning)
+	{
+		emscripten_cancel_main_loop();
+		return;
+	}
+#endif
+	sinkVisualizerBars();
+	updateChannelSyncBuffer();
+	readMouseXY();
+	readKeyModifiers(); // set/clear CTRL/ALT/SHIFT/AMIGA key states
+	handleInput();
+	updateMouseCounters();
+	handleKeyRepeat(keyb.lastRepKey);
+
+	if (!mouse.buttonWaiting && ui.sampleMarkingPos == -1 &&
+		!ui.forceSampleDrag && !ui.forceVolDrag && !ui.forceSampleEdit)
+	{
+		handleGUIButtonRepeat();
+	}
+
+	renderFrame();
+	flipFrame();
 }
 
 static void handleInput(void)
