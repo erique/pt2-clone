@@ -2200,6 +2200,19 @@ bool handleRightMouseButton(void)
 		samplerEditSample(false);
 	}
 
+#ifdef __EMSCRIPTEN__
+	if (checkGUIButtons() == PTB_DO_FILEAREA)
+	{
+		uint32_t fileEntryRow = (mouse.y - 34) / 6;
+		if (!diskOpEntryIsEmpty(fileEntryRow) && !diskOpEntryIsDir(fileEntryRow))
+		{
+			UNICHAR *fileName = diskOpGetUnicodeEntry(fileEntryRow);
+			snprintf(diskop.downloadFullPath, sizeof(diskop.downloadFullPath)-1, "%s/%s", editor.currPath, fileName);
+			diskop.fileOp = 2;	// DOWNLOAD
+		}
+	}
+#endif
+
 	return false;
 }
 
@@ -3752,6 +3765,9 @@ static bool handleGUIButtons(int32_t button) // are you prepared to enter the ju
 			diskop.cached = false;
 			ui.updateDiskOpFileList = true;
 			ui.updateLoadMode = true;
+#ifdef __EMSCRIPTEN__
+			diskop.fileOp = 1;	// UPLOAD
+#endif
 		}
 		break;
 
@@ -3763,6 +3779,9 @@ static bool handleGUIButtons(int32_t button) // are you prepared to enter the ju
 			diskop.cached = false;
 			ui.updateDiskOpFileList = true;
 			ui.updateLoadMode = true;
+#ifdef __EMSCRIPTEN__
+			diskop.fileOp = 1;	// UPLOAD
+#endif
 		}
 		break;
 

@@ -283,6 +283,11 @@ bool saveSample(bool checkIfFileExist, bool giveNewFreeFilename)
 	displayMsg("SAMPLE SAVED !");
 	setMsgPointer();
 
+#ifdef __EMSCRIPTEN__
+	snprintf(diskop.downloadFullPath, sizeof(diskop.downloadFullPath)-1, "%s/%s", editor.currPath, fileName);
+	diskop.fileOp = 2;	// DOWNLOAD
+#endif
+
 	diskop.cached = false;
 	if (ui.diskOpScreenShown)
 		ui.updateDiskOpFileList = true;

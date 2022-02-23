@@ -37,6 +37,11 @@
 #include "pt2_sample_loader.h"
 #include "pt2_bmp.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+//#include <emscripten/html5.h>
+#endif
+
 typedef struct fileEntry_t
 {
 	UNICHAR *nameU;
@@ -970,3 +975,66 @@ void updateDiskOp(void)
 		}
 	}
 }
+
+#ifdef __EMSCRIPTEN__
+
+EMSCRIPTEN_KEEPALIVE int32_t GetFileOpFromJS()
+{
+	int32_t op = diskop.fileOp;
+	diskop.fileOp = 0;
+	return op;
+}
+
+EMSCRIPTEN_KEEPALIVE int CopyFileFromJS(const char* name, uint8_t *buffer, size_t size)
+{
+	struct stat st;
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path)-1, "%s/%s", editor.currPath, name);
+
+	if (stat(path, &st) == 0)
+	{
+		displayErrorMsg("FILE EXISTS !");
+		return 0;
+	}
+
+	FILE* f = fopen(path, "wb");
+	if (!f)
+		return 0;
+	fwrite(buffer, 1, size, f);
+	fclose(f);
+
+	diskop.cached = false;
+	ui.updateDiskOpFileList = true;
+
+	if (diskop.mode == DISKOP_MODE_MOD)
+	{
+		// NB! no modified/discard check here!
+
+		loadModFromArg(path);
+
+		if (config.autoCloseDiskOp)
+			ui.diskOpScreenShown = false;
+
+		editor.currMode = MODE_IDLE;
+		editor.playMode = PLAY_MODE_NORMAL;
+		editor.songPlaying = false;
+
+		pointerSetMode(POINTER_MODE_IDLE, DO_CARRY);
+
+		displayMainScreen();
+	}
+	else if (diskop.mode == DISKOP_MODE_SMP)
+	{
+		unicharToAnsi(fileNameBuffer, path, PATH_MAX);
+		loadSample(path, fileNameBuffer);
+	}
+
+	return 1;
+}
+
+EMSCRIPTEN_KEEPALIVE const char* GetDownloadFileName()
+{
+	return diskop.downloadFullPath;
+}
+
+#endif

@@ -193,6 +193,10 @@ typedef struct diskop_t
 	int8_t mode, smpSaveType;
 	int32_t numEntries, scrollOffset;
 	SDL_Thread *fillThread;
+#ifdef __EMSCRIPTEN__
+	int32_t fileOp;
+	char downloadFullPath[PATH_MAX];
+#endif
 } diskop_t;
 
 typedef struct cursor_t
