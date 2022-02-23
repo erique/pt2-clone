@@ -9,8 +9,8 @@ emcc -s USE_SDL=2 \
 	-pthread \
 	--embed-file ./release/other/protracker.ini@protracker.ini \
 	--embed-file ./mods@./mods \
-	-o release/other/pt2-clone.html \
+	-o release/emscripten/pt2-clone.html \
 	-DNDEBUG src/gfx/*.c src/*.c -lm -Wall -Wno-unused-result -Wc++-compat -Wshadow -Winit-self -Wextra -Wunused -Wunreachable-code -Wredundant-decls -Wswitch-default -march=native -mtune=native -O3
 rm src/gfx/*.o src/*.o &> /dev/null
 
-echo Done. The executable can be found in \'release/other\' if everything went well.
+echo Done. The generated output can be found in \'release/emscripten\' if everything went well. Use \'python3 wasm-server.py\' to test locally.

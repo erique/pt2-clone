@@ -5,6 +5,12 @@ import socketserver
 from http.server import SimpleHTTPRequestHandler
 
 class WasmHandler(SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory="release/emscripten", **kwargs)
+    def do_GET(self):
+        if self.path == '/':
+            self.path = '/pt2-clone.html'
+        return super().do_GET()
     def end_headers(self):        
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
