@@ -91,7 +91,7 @@ static void handleInput(void);
 static bool initializeVars(void);
 static void handleSigTerm(void);
 static void cleanUp(void);
-static void mainUpdate(void *);
+static void mainUpdate();
 
 static void clearStructs(void)
 {
@@ -338,11 +338,11 @@ int main(int argc, char *argv[])
 
 	hpc_ResetEndTime(&video.vblankHpc);
 #ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop_arg(mainUpdate, NULL, -1, 1);
+	emscripten_set_main_loop(mainUpdate, 0, 1);
 #else
 	while (editor.programRunning)
 	{
-		mainUpdate(NULL);
+		mainUpdate();
 	}
 #endif
 
@@ -352,9 +352,8 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-static void mainUpdate(void *arg)
+static void mainUpdate()
 {
-	(void)arg;
 #ifdef __EMSCRIPTEN__
 	if (!editor.programRunning)
 	{
