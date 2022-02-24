@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Emscripten-Generated Code</title>
     <style>
+      body { background-color: #000; background-size: cover; background-repeat: no-repeat; background-image: url(background.jpg); }
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
       textarea.emscripten { font-family: monospace; width: 80%; }
       div.emscripten { text-align: center; }
@@ -57,6 +58,7 @@
         color: white;
         font-family: 'Lucida Console', Monaco, monospace;
         outline: none;
+        display: none; /* remove to get console output */
       }
     </style>
   </head>
@@ -69,9 +71,7 @@
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" onmouseup="mouseUp()" ondragover="dragHandler(event)" ondrop="dropHandler(event)" tabindex=-1></canvas>
     </div>
-    <hr/>
     <textarea class="emscripten" id="output" rows="8"></textarea>
-    <hr>
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
