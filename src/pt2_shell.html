@@ -67,7 +67,7 @@
       <progress value="0" max="100" id="progress" hidden=1></progress>  
     </div>
     <div class="emscripten_border">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" onmouseup="mouseUp()" tabindex=-1></canvas>
+      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" onmouseup="mouseUp()" ondragover="dragHandler(event)" ondrop="dropHandler(event)" tabindex=-1></canvas>
     </div>
     <hr/>
     <textarea class="emscripten" id="output" rows="8"></textarea>
@@ -153,7 +153,8 @@
         if (fileOp == 1) {  // UPLOAD
           var fileReq = document.createElement('input');
           fileReq.setAttribute('type', 'file');
-          fileReq.setAttribute('onchange','loadFile(event)');
+          fileReq.setAttribute('onchange','loadFileEvent(event)');
+          fileReq.setAttribute('multiple', true);
           fileReq.click();
 
         } else if (fileOp == 2) {   // DOWNLOAD
@@ -173,7 +174,11 @@
         }
       }
 
-      function loadFile(e) {
+      function loadFileEvent(e) {
+        Array.prototype.forEach.call(e.target.files, function(f) { loadFile(f); });
+      }
+
+      function loadFile(f) {
         const fileReader = new FileReader();
         fileReader.onload = (event) => {
           const fileName = event.target.fileName;
@@ -184,8 +189,14 @@
           heapBuffer.set(inputArray);
           const res = Module.ccall('CopyFileFromJS', 'number', ['string', 'number', 'number'], [fileName, heapBuffer.byteOffset, inputArray.length]);
         };
-        fileReader.fileName = e.target.files[0].name;
-        fileReader.readAsArrayBuffer(e.target.files[0]);
+        fileReader.fileName = f.name;
+        fileReader.readAsArrayBuffer(f);
+      }
+
+      function dragHandler(e) { e.preventDefault(); }
+      function dropHandler(e) {
+        e.preventDefault();
+        Array.prototype.forEach.call(e.dataTransfer.files, function(f) { loadFile(f); });
       }
 
     </script>
