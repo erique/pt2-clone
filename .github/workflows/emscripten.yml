@@ -1,0 +1,38 @@
+name: emscripten
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  image:
+
+    runs-on: ubuntu-20.04
+    container: emscripten/emsdk
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: describe
+      id: describe
+      run: echo "::set-output name=gittag::$(git describe --tags)"
+      
+    - name: build
+      run: ./make-emscripten.sh
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: pt2-clone_emscripten_${{ steps.describe.outputs.gittag }}
+        path: release/emscripten
+        retention-days: 5
+   
+    - uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r pt2-clone_emscripten_${{ steps.describe.outputs.gittag }}.zip release/emscripten
+    
+    - name: release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        generate_release_notes: true
+        files: |
+          *.zip
